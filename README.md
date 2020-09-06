@@ -1,55 +1,79 @@
-# Lab 03/04
-The starter code for lab 03-04.
+# Lab 05/06
+The starter code for lab 05-06.
 
 ## Overview
-Let's design the user interface of a single page of a Twitter app in Flutter.
+Let's develop a simple grade entry system (UI and back-end) in Flutter.
 
-Note: This lab is designed to take 2 weeks, and will be worth the value of two lab assignments.  It is recommended that you do the overall layout in the first week, and use basic widgets (introduced last week) as placeholders (e.g. `Text()`).  You can fill in the correct widgets in the second week.
-
-## Instructions
-
-### Layout Design
-Head to Twitter and check out the interface for the main stream page.  Below is an example (image) post:
-
-![a single tweet](images/single_tweet.png)
-
-_Figure 1 - A single Tweet_
-
-First, we need to determine the layout from the largest elements to the smallest.  Can you see any structure at the top-most level?
-
-A marked-up screenshot is presented below.  For those columns, try to come up with a structure using the same technique.
-
-![user interface breakdown](images/ui_breakdown.png)
+_**Note:** This lab is designed to take 2 weeks, and will be worth the value of two lab assignments.  It is recommended that you do the overall user interface in the first week, and have placeholder data handlers (e.g. that just print to the console).  You can implement these functions in the second week._
  
-_Figure 2 - The Tweet can be broken down into two columns_
+## Instructions
+### User Interface
+Our user interface will be relatively simple.  We'll have two pages.  The first page, `ListGrades`, will show a list of all available grades.  The second page, `GradeForm`, will allow entry of grade data.  Below are two screenshots of the resulting UI:
 
-The tweet can be broken down into two columns.  We can represent this using a `Row` widget.  The first column is pretty simple; it merely has a single user avatar (we can use `CircleAvatar` for this).  The second column needs to be examined further.  Apply the same process to the second column, and repeat until you have fully designed the UI.
+![the list grades page](images/list_grades.png)
+ 
+_Figure 1 - The `ListGrades` page_
 
-Create a new class, `TweetWidget`, that takes each of the elements (`userShortName`, `userLongName`, `timeString`, `description`, `imageURL`, `numComments`, `numRetweets`, and `numLikes`) as constructor arguments.  Let's ignore links for this example.  The `Tweet` class should have a `build()` method that returns a (`Row`) widget with all of the content contained within the widget tree, such that it resembles the above screenshot. 
+![the grade form page](images/grade_form.png)
 
-### Choosing the Correct Widgets and Adding Content
-To make your job easier, the icons needed have been listed in the table, below.  These will be `IconButtons`, but you won't have to handle them being toggled/clicked.  In fact, none of the interaction elements of this page are required for this lab assignment.
+_Figure 2 - The `GradeForm` page_
 
-Icon | Description
----- | -----------
-Icons.expand_more | The menu on the top right of the tweet
-Icons.chat_bubble_outline | The number of comments
-Icons.repeat | The number of re-tweets
-Icons.favorite_border | The number of likes
-Icons.bookmark_border | For sharing the tweet
+First, you will need to create a Grade class that will store the following information:
+- `sid` - A `String` containing the 9-digit student ID
+- `grade` - A `String` containing the letter grade for that student
 
-Use some placeholder data, and your new `Tweet` class, to generate a `ListView` of a few tweets, to observe your design.  The same placeholder data can be used in all of the tweets, if you'd like.  Don't worry too much about the font family of your text, and you also will not have to shorten longer numbers (1648 -> 1.6k).  The menu icon is expected to be right-justified, but that is more advanced UI layout than we are ready for.  Instead, you can left-justify it like shown in the sample, below.
+#### ListGrades
+The `ListGrades` page will use a `ListView` to show all grades entered into the system.  For now, you can use a list of placeholder data, but be sure to enter enough grades to test scrolling.  The `ListView` elements will be `ListTile` widgets.  The `title` of the `ListTile` will be the `sid`, and the `subtitle` will be the `grade`.  The `ListGrades` page will also show two actions on the app bar:
 
-The main image will be loaded from some online source.  Use any image(s) that you have the rights/permission to use.
+- `Edit` (using the icon `Icons.edit`) - calls the method `_editGrade()`
+- `Delete` (using the icon `Icons.delete`) - calls the method `_deleteGrade()`
 
-Below, you will see the sample output that is expected of you.
+The `ListGrades` page will also show a floating action button (using the icon `Icons.add`), which will call the method `_addGrade()`.
 
-![output of app showing two tweets](images/app_output.png)
+For now, both the `_addGrade()` method and the `_editGrade()` method will merely show the `GradeForm` page, and print a message to the console to help you ensure that they execute.
 
-_Figure 3 - The app's output, showing two tweets_
+In order to edit or delete a grade, we'll need the ability to select one.  We'll do this by adding a variable `_selectedIndex`, which will get set when the list item is tapped.  This can easily be done by wrapping the `ListTile` in a `GestureDetector`, and implementing the `onTap` handler.  For the `ListTile` that is selected, show it with a blue background.  You can do this by wrapping the `ListTile` in a `Container`, and giving it a `BoxDecoration` as its decoration.  `BoxDecoration` has a `color` attribute.   The selected grade will not impact the add grade functionality.
 
-## Need Extra Challenge?
-Add the interaction for some/all of the elements in your application (e.g. the like button toggle).
+#### GradeForm
+The `GradeForm` page will show a form, consisting of two text fields (one for `sid`, and one for `grade`), and a floating action button (`Save`, with icon `Icons.save`).
+
+### Implementing Persistence using SQLite
+Our job for this part will be to:
+
+- [ ] populate the `ListGrades` page with data from the database, and
+- [ ] implement the `_addGrade()` method and the `_editGrade()` method.  
+
+The actual logic will go into a separate class, `GradesModel`.  You can use the _SQFlite_ demo code as a starting point, if it makes it easier.
+
+You will need to add an id field, as well as the following functions in the `Grade` class:
+- `toMap()`
+    - Returns a map of all three fields of the `Grade` class (`id`, `sid`, and `grade`)
+- `fromMap()`
+    - Generates a new `Grade` instance using a map containing all three fields of the `Grade` class (`id`, `sid`, and `grade`)
+
+You will need to implement the following functions in the `GradesModel` class:
+- `getAllGrades()`
+    - Returns a list of all grades in the database
+- `insertGrade(Grade grade)`
+    - Adds a new grade to the database, using the data included in `grade`
+    - Returns the newly generated id
+- `updateGrade(Grade grade)`
+    - Updates the grade in the database with `id` equal to that of `grade`, using the new data included in grade
+- `deleteGradeById(int id)`
+    - Deletes the grade in the database with the provided `id`
+
+Using the `getAllGrades()` function in `GradesModel`, provide real data to the `ListGrades` page.
+
+Now, we can implement the stubbed functions:
+- `_addGrade()`
+    - Show the `GradeForm` page, and use the returned `Grade` object (if not `null`) to call `insertGrade` in the `GradesModel`
+- `_editGrade()`
+    - Show the `GradeForm` page, and use the returned `Grade` object (if not `null`) to call `updateGrade` in the `GradesModel`
+- `_deleteGrade()`
+    - For the selected `Grade`, use its `id` to call `deleteGradeById` in the `GradesModel`
+
+### Need Extra Challenge?
+Add the ability to delete grades using the swiping gesture.  Add the ability to edit grades using the long press gesture, with a popup menu if able.
 
 ## Getting Help
 If you run into difficulty, you may wish to check out some of the following resources:
